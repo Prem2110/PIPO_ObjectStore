@@ -20,6 +20,7 @@ This repository is designed for:
 ---
 
 ## Project Structure
+```
 PIPO_OBJECTSTORE/
 │
 ├── actions/
@@ -29,7 +30,7 @@ PIPO_OBJECTSTORE/
 │ └── list_files.py
 │
 ├── downloads/ # list of downloaded files
-├── sap_os.py # core logic (upload/download/list)
+├── sap_os.py # core logic (upload/download/list) ```
 
 ## 🔧 Installation
 ## uv environment
@@ -40,10 +41,15 @@ PIPO_OBJECTSTORE/
 
 
 ## Install dependancies
-    ` pip install -r requirements.txt `
+`pip install -r requirements.txt`
 
 ## ▶️ Usage
-
+upload.py
 ``` python
 python -m actions.upload
 
+download.py
+``` python
+python -m actions.upload
+
+---
