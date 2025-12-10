@@ -72,7 +72,10 @@ python -m actions.upload
 
 To run download.py
 ``` python
-python -m actions.upload
+python -m actions.download
 ```
-
+To run list_files.py
+``` python
+python -m actions.list_files
+```
 ---
