@@ -1,4 +1,4 @@
-# PIPO Object Store Utility (SAP Object Store)
+# PIPO Object Store
 
 A lightweight Python utility to **upload**, **download**, and **list files** in **SAP Object Store** (S3-compatible).
 
@@ -39,11 +39,10 @@ PIPO_OBJECTSTORE/
 1. Initalise uv: **uv init**
 2. Create a new Virtual environment: **uv venv .venv**
 3. activate environment: **.venv\Scripts\activate**
-4. install dependencies: **uv add -r requirements.txt**
 
 
 ## Install dependancies
-`pip install -r requirements.txt`
+`uv add -r requirements.txt`
 
 ## 🔐 Environment Variables (.env)
 Create a .env file in the project root:
