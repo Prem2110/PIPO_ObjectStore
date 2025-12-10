@@ -42,7 +42,9 @@ PIPO_OBJECTSTORE/
 
 
 ## Install dependancies
-`uv add -r requirements.txt`
+``` python
+uv add -r requirements.txt
+```
 
 ## 🔐 Environment Variables (.env)
 Create a .env file in the project root:
