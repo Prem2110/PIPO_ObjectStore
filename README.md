@@ -30,7 +30,9 @@ PIPO_OBJECTSTORE/
 │ └── list_files.py
 │
 ├── downloads/ # list of downloaded files
-├── sap_os.py # core logic (upload/download/list) ```
+├── sap_os.py # core logic (upload/download/list) 
+
+```
 
 ## 🔧 Installation
 ## uv environment
@@ -43,13 +45,33 @@ PIPO_OBJECTSTORE/
 ## Install dependancies
 `pip install -r requirements.txt`
 
-## ▶️ Usage
-upload.py
-``` python
-python -m actions.upload
+## 🔐 Environment Variables (.env)
+Create a .env file in the project root:
 
-download.py
+```env
+# Write permissions (UPLOAD)
+WRITE_ACCESS_KEY_ID=YOUR_WRITE_KEY
+WRITE_SECRET_ACCESS_KEY=YOUR_WRITE_SECRET
+
+# Read permissions (DOWNLOAD + LIST)
+READ_ACCESS_KEY_ID=YOUR_READ_KEY
+READ_SECRET_ACCESS_KEY=YOUR_READ_SECRET
+
+# Shared configuration
+BUCKET_NAME=hcp-xxxxxxx-yyyy-yyyy
+REGION=us-east-1
+HOST=s3.amazonaws.com
+```
+---
+## ▶️ Usage
+To run upload.py
 ``` python
 python -m actions.upload
+```
+
+To run download.py
+``` python
+python -m actions.upload
+```
 
 ---
