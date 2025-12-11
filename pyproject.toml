@@ -5,6 +5,9 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "boto3>=1.42.6",
-    "python-dotenv>=1.2.1",
+    "boto3>=1.40.46,<1.40.62",
+    "aioboto3>=15.5.0,<16.0.0",
+    "python-dotenv",
+    "fastapi>=0.124.2",
+    "hdbcli>=2.26.26",
 ]

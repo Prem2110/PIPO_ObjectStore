@@ -26,7 +26,7 @@ def get_credentials(mode: str):
         "aws_secret_access_key": secret_key,
         "region_name": os.getenv("REGION", "us-east-1"),
         "bucket": os.getenv("BUCKET_NAME"),
-        "endpoint_url": f"https://{os.getenv('HOST', 's3.amazonaws.com')}"
+        "endpoint_url": os.getenv("ENDPOINT_URL", f"https://{os.getenv('HOST', 's3.amazonaws.com')}")
     }
 
     if not creds["bucket"]:
@@ -82,4 +82,4 @@ def list_objects(prefix=None):
             "size": item["Size"]
         })
 
-    return files  
+    return files

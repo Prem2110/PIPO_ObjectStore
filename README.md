@@ -79,3 +79,15 @@ To run list_files.py
 python -m actions.list_files
 ```
 ---
+
+## HANA DB
+```env
+HANA_ADDRESS=
+HANA_PORT=443
+HANA_USER=
+HANA_PASSWORD=
+HANA_SSL=true
+HANA_ENCRYPT=true
+HANA_SCHEMA=
+HANA_TABLE=
+```
