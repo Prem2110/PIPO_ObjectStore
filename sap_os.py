@@ -11,7 +11,6 @@ def get_credentials(mode: str):
     mode = "read" or "write"
     Loads credentials from .env only.
     """
-
     if mode not in ("read", "write"):
         raise ValueError("Mode must be 'read' or 'write'.")
 
@@ -54,14 +53,61 @@ def upload(local_file, object_key):
     s3.upload_file(local_file, bucket, object_key)
     print(f"Uploaded {local_file} → s3://{bucket}/{object_key}")
 
-
-def download(object_key, local_file):
-    creds = get_credentials("read")
+def delete(object_key):
+    """Delete a file from Object Store"""
+    creds = get_credentials("write")
     s3 = create_client(creds)
     bucket = creds["bucket"]
 
-    s3.download_file(bucket, object_key, local_file)
-    print(f"Downloaded s3://{bucket}/{object_key} → {local_file}")
+    s3.delete_object(Bucket=bucket, Key=object_key)
+    print(f"Deleted s3://{bucket}/{object_key}")
+
+def delete_folder(prefix):
+    """Delete an entire folder (all objects under a prefix)."""
+
+    creds = get_credentials("write")
+    s3 = create_client(creds)
+    bucket = creds["bucket"]
+
+    # Ensure the prefix ends with "/"
+    if not prefix.endswith("/"):
+        prefix = prefix + "/"
+
+    print(f"Deleting folder: {prefix}")
+
+    continuation_token = None
+    total_deleted = 0
+
+    while True:
+        list_params = {
+            "Bucket": bucket,
+            "Prefix": prefix
+        }
+
+        if continuation_token:
+            list_params["ContinuationToken"] = continuation_token
+
+        response = s3.list_objects_v2(**list_params)
+
+        if "Contents" not in response:
+            print("No objects found inside folder.")
+            break
+
+        objects = [{"Key": obj["Key"]} for obj in response["Contents"]]
+
+        s3.delete_objects(
+            Bucket=bucket,
+            Delete={"Objects": objects}
+        )
+
+        total_deleted += len(objects)
+
+        if response.get("IsTruncated"):
+            continuation_token = response["NextContinuationToken"]
+        else:
+            break
+
+    print(f"Deleted {total_deleted} object(s) under {prefix}")
 
 
 def list_objects(prefix=None):
@@ -79,7 +125,48 @@ def list_objects(prefix=None):
     for item in response.get("Contents", []):
         files.append({
             "key": item["Key"],
-            "size": item["Size"]
+            "size": item["Size"],
+            "last_modified": item["LastModified"]
         })
 
-    return files  
+    return files
+
+
+def format_size(size_bytes):
+    """Convert bytes to KB or MB for nicer display."""
+    if size_bytes < 1024:
+        return f"{size_bytes} B"
+    elif size_bytes < 1024 * 1024:
+        return f"{size_bytes / 1024:.2f} KB"
+    else:
+        return f"{size_bytes / (1024 * 1024):.2f} MB"
+
+
+def print_table(data):
+    """Pretty table output in KB/MB; no tree structure."""
+    if not data:
+        print("No objects found.")
+        return
+
+    # Determine column widths
+    key_width = max(len("Object Key"), max(len(item["key"]) for item in data))
+    size_width = len("Size")
+
+    # Print header
+    print(f"{'Object Key'.ljust(key_width)} | {'Size'.ljust(size_width)}")
+    print("-" * (key_width + size_width + 3))
+
+    # Print rows
+    for item in data:
+        fmt_size = format_size(item["size"])
+        print(f"{item['key'].ljust(key_width)} | {fmt_size}")
+
+def upload_stream(file_obj, object_key):
+    """Upload a file-like object (stream) to Object Store."""
+    creds = get_credentials("write")
+    s3 = create_client(creds)
+    bucket = creds["bucket"]
+
+    s3.upload_fileobj(file_obj, bucket, object_key)
+    print(f"Uploaded stream → s3://{bucket}/{object_key}")
+

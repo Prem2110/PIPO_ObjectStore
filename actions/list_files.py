@@ -1,28 +1,15 @@
 from sap_os import list_objects
-from collections import defaultdict
+from datetime import datetime
+from tabulate import tabulate
 
-def build_tree(files):
-    tree = lambda: defaultdict(tree)
-    root = tree()
 
-    for f in files:
-        parts = f["key"].split("/")
-        current = root
-        for part in parts:
-            current = current[part]
+def readable_size(size):
+    for unit in ["B", "KB", "MB", "GB"]:
+        if size < 1024:
+            return f"{size:.2f} {unit}"
+        size /= 1024
+    return f"{size:.2f} TB"
 
-    return root
-
-def print_tree(node, indent=""):
-    keys = list(node.keys())
-    for i, key in enumerate(keys):
-        is_last = (i == len(keys) - 1)
-        connector = "└── " if is_last else "├── "
-        print(indent + connector + key)
-
-        if node[key]:
-            next_indent = indent + ("    " if is_last else "│   ")
-            print_tree(node[key], next_indent)
 
 def list_action(prefix=None):
     files = list_objects(prefix)
@@ -31,10 +18,24 @@ def list_action(prefix=None):
         print("No files found.")
         return
 
-    tree = build_tree(files)
+    table = []
 
-    print("\nDirectory tree:")
-    print_tree(tree)
+    for obj in files:
+        key = obj["key"]
+        size = readable_size(obj["size"])
+        ext = key.split(".")[-1] if "." in key else "-"
+        uploaded = obj["last_modified"].astimezone().strftime("%Y-%m-%d %H:%M:%S")
+
+        table.append([key, size, ext, uploaded])
+
+    print("\nFiles in Object Store:\n")
+    print(tabulate(
+        table,
+        headers=["File Name", "Size", "Type", "Uploaded Time"],
+        tablefmt="grid",
+        maxcolwidths=[50, None, None, None],
+        stralign="left"
+    ))
 
 
 if __name__ == "__main__":
