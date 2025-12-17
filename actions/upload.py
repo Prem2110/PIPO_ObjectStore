@@ -1,88 +1,49 @@
-# import os
-# import sys
-# from sap_os import upload
-
-# UPLOAD_ROOT = "demo"  # root folder inside Object Store
-
-
-# def upload_single_file(path: str, object_root: str = UPLOAD_ROOT):
-#     """Upload one file only."""
-#     if not os.path.isfile(path):
-#         raise FileNotFoundError(f"{path} is not a valid file")
-
-#     filename = os.path.basename(path)
-#     object_key = os.path.join(object_root, filename).replace("\\", "/")
-
-#     upload(path, object_key)
-#     print(f"Uploaded file → {object_key}")
-
-
-# def main():
-#     # sys.argv = ["actions.upload", "test1.txt", "test2.txt"]
-#     files = sys.argv[1:]
-
-#     if not files:
-#         print("Usage: python -m actions.upload <file1> <file2> ...")
-#         return
-
-#     for f in files:
-#         upload_single_file(f)
-
-
-# if __name__ == "__main__":
-#     main()
-
-
 import os
-import sys
-import uuid
-import mimetypes
-
 from sap_os import upload
-from hana_db import insert_metadata     # ✅ NEW
 
 UPLOAD_ROOT = "demo"  # root folder inside Object Store
 
 
-def upload_single_file(path: str, object_root: str = UPLOAD_ROOT):
-    """Upload one file and store metadata in HANA."""
+def upload_single_file(local_file: str, object_root: str = UPLOAD_ROOT):
+    """Upload a single file and preserve folder structure."""
+    clean_path = local_file.lstrip("./").lstrip("/")
+    object_key = os.path.join(object_root, clean_path).replace("\\", "/")
 
-    if not os.path.isfile(path):
-        raise FileNotFoundError(f"{path} is not a valid file")
-
-    filename = os.path.basename(path)
-    object_key = os.path.join(object_root, filename).replace("\\", "/")
-
-    # 1️⃣ Upload file to Object Store
-    upload(path, object_key)
-    print(f"Uploaded file → {object_key}")
-
-    # 2️⃣ Prepare metadata for HANA
-    metadata = {
-        "file_id": str(uuid.uuid4()),
-        "object_key": object_key,
-        "file_name": filename,
-        "mime_type": mimetypes.guess_type(path)[0],
-        "size": os.path.getsize(path),
-        "uploaded_by": "system"
-    }
-
-    # 3️⃣ Insert metadata into HANA
-    insert_metadata(metadata)
-
-    print(f"[HANA] Metadata saved → {metadata['file_id']}")
+    upload(local_file, object_key)
+    print(f"Uploaded → {local_file} → {object_key}")
 
 
-def main():
-    files = sys.argv[1:]
+def upload_folder(folder_path: str, object_root: str = UPLOAD_ROOT):
+    """Upload all files inside a folder (recursively)."""
 
-    if not files:
-        print("Usage: python -m actions.upload <file1> <file2> ...")
+    folder_path = folder_path.rstrip("/").rstrip("\\")
+
+    if not os.path.isdir(folder_path):
+        print(f"Error: {folder_path} is not a folder")
         return
 
-    for f in files:
-        upload_single_file(f)
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            local_path = os.path.join(root, file)
+
+            # Build remote object key: demo/folder/subfolder/file.ext
+            relative_path = os.path.relpath(local_path, folder_path)
+            object_key = os.path.join(object_root, folder_path, relative_path).replace("\\", "/")
+
+            upload(local_path, object_key)
+            print(f"Uploaded → {local_path} → {object_key}")
+
+
+def upload_action(path: str):
+    """Detect file or folder and upload accordingly."""
+    if os.path.isfile(path):
+        upload_single_file(path)
+    elif os.path.isdir(path):
+        upload_folder(path)
+    else:
+        print(f"Error: {path} is not a valid file or folder")
 
 
 if __name__ == "__main__":
-    main()
+    upload_action("HR Mini Master")
+
